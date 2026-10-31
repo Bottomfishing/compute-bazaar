@@ -1,0 +1,7 @@
+import {useEffect,useRef,useState} from 'react';
+interface LabWindow extends Window {jupyterapp?:{shell:{currentWidget?:{sessionContext?:{isReady:boolean;session?:{kernel?:{connectionStatus:string;status:string}}}}}}}
+export default function NotebookFrame({src}:{src:string}){const frame=useRef<HTMLIFrameElement>(null),[ready,setReady]=useState(false),[slow,setSlow]=useState(false);
+  useEffect(()=>{setReady(false);setSlow(false);const started=Date.now();const timer=setInterval(()=>{try{const app=(frame.current?.contentWindow as LabWindow|null)?.jupyterapp,c=app?.shell.currentWidget?.sessionContext;if(c?.isReady&&c.session?.kernel?.connectionStatus==='connected'&&c.session.kernel.status==='idle'){setReady(true);clearInterval(timer);}else if(Date.now()-started>30000)setSlow(true);}catch{if(Date.now()-started>30000)setSlow(true);}},200);return()=>clearInterval(timer);},[src]);
+  useEffect(()=>{if(frame.current)frame.current.inert=!ready;},[ready]);
+  return <><p className="notebook-connection" role="status">{ready?'Notebook 内核已就绪':slow?'内核连接尚未完成，请稍候或重新打开 Notebook':'正在连接 Notebook 内核，请稍候…'}</p><div className="notebook-frame-wrap"><iframe ref={frame} title="JupyterLab Notebook 工作台" src={src} tabIndex={ready?0:-1} style={{pointerEvents:ready?'auto':'none'}} aria-busy={!ready} sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"/>{!ready&&<div className="notebook-loading" aria-hidden="true"><span>正在准备 Notebook</span><small>页面加载完成后，还需要连接计算内核。</small></div>}</div></>;
+}

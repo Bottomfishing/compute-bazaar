@@ -1,0 +1,4 @@
+import {defineConfig} from '@playwright/test';
+import {existsSync} from 'node:fs';
+const chromeInstalled=process.platform==='win32'&&existsSync('C:/Program Files/Google/Chrome/Application/chrome.exe');
+export default defineConfig({testDir:'./tests/e2e',workers:1,expect:{timeout:10000},use:{baseURL:'http://127.0.0.1:5183',headless:true,channel:process.env.PLAYWRIGHT_CHANNEL||(chromeInstalled?'chrome':undefined),trace:'retain-on-failure'},webServer:{stdout:process.env.DEBUG_NOTEBOOK==='1'?'pipe':'ignore',command:'npx concurrently -k "tsx server/index.ts" "vite --host 127.0.0.1 --port 5183"',env:{DEBUG_NOTEBOOK:process.env.DEBUG_NOTEBOOK||'0',PORT:'3011',API_PORT:'3011',DB_PATH:`./data/e2e-${process.pid}-${Date.now()}.sqlite`,NODE_ENV:'development'},url:'http://127.0.0.1:5183',reuseExistingServer:false,timeout:60000}});

@@ -1,0 +1,4 @@
+import {z} from 'zod';
+export const notebookMessage=z.object({notebook:z.literal(true),id:z.string().uuid(),order_id:z.number().int().positive(),kind:z.enum(['http','ws-open','ws-data','ws-close','error']),path:z.string().max(4096).optional(),method:z.enum(['GET','POST','PUT','PATCH','DELETE','HEAD']).optional(),headers:z.record(z.string(),z.string()).optional(),body:z.string().max(12*1024*1024).optional(),status:z.number().int().min(100).max(599).optional(),protocols:z.array(z.string().max(100)).max(5).optional(),protocol:z.string().max(100).optional(),binary:z.boolean().optional(),error:z.string().max(500).optional()});
+export type NotebookMessage=z.infer<typeof notebookMessage>;
+export function notebookPath(order:number,path:string){return path.startsWith(`/notebooks/${order}/`)&&!/[\r\n\\]/.test(path)&&!/%(?:2e|2f|5c)/i.test(path)&&!path.split('?')[0].split('/').includes('..');}
